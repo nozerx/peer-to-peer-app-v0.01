@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
-	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
 )
 
@@ -19,7 +18,7 @@ func newPubSubService(ctx context.Context, host host.Host) *p2ppubsub.PubSub {
 	return pubSubService
 }
 
-func HandlePubSub(ctx context.Context, host host.Host, topic string) (*pubsub.Subscription, *pubsub.Topic) {
+func HandlePubSub(ctx context.Context, host host.Host, topic string) (*p2ppubsub.Subscription, *p2ppubsub.Topic) {
 	pubSubServie := newPubSubService(ctx, host)
 	pubSubTopic, err := pubSubServie.Join(topic)
 	if err != nil {
