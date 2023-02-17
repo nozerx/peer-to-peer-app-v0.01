@@ -56,34 +56,45 @@ func handleInputFromSubscription(ctx context.Context, host host.Host, sub *p2ppu
 	}
 }
 
-func writeToSubscription(ctx context.Context, host host.Host, topic *p2ppubsub.Topic) {
+func handleInputFromSDI(ctx context.Context, host host.Host, topic *p2ppubsub.Topic) {
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		messg, err := reader.ReadString('\n')
+		input, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println("Error while reading from standard input")
+			fmt.Println("Error during reading from standard input")
 		} else {
-			chatMessage := composeMessage(messg, host)
-			inputContent, err := json.Marshal(chatMessage)
-			if err != nil {
-				fmt.Println("Error while marshalling at chatmessage level")
+			if input[:3] == "<s>" {
+				fmt.Println("Tag-> <s>")
+				// to send file
+				fmt.Println("Directive to send the file ", input[3:])
 			} else {
-				packetContent := &Packet{
-					InnerContent: inputContent,
-					Type:         "chat",
-				}
-				packet, err := json.Marshal(packetContent)
-				if err != nil {
-					fmt.Println("Error while marshalling at packet level")
-				} else {
-					topic.Publish(ctx, packet)
-				}
+				fmt.Println("Tag-> <c>")
+				writeToSubscription(ctx, host, input, topic)
 			}
+		}
+	}
+}
+
+func writeToSubscription(ctx context.Context, host host.Host, message string, topic *p2ppubsub.Topic) {
+	chatMessage := composeMessage(message, host)
+	inputContent, err := json.Marshal(chatMessage)
+	if err != nil {
+		fmt.Println("Error while marshalling at chatmessage level")
+	} else {
+		packetContent := &Packet{
+			InnerContent: inputContent,
+			Type:         "chat",
+		}
+		packet, err := json.Marshal(packetContent)
+		if err != nil {
+			fmt.Println("Error while marshalling at packet level")
+		} else {
+			topic.Publish(ctx, packet)
 		}
 	}
 }
 
 func HandlePubSubMessages(ctx context.Context, host host.Host, sub *p2ppubsub.Subscription, topic *p2ppubsub.Topic) {
 	go handleInputFromSubscription(ctx, host, sub)
-	writeToSubscription(ctx, host, topic)
+	handleInputFromSDI(ctx, host, topic)
 }
