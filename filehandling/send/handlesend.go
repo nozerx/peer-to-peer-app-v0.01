@@ -6,13 +6,12 @@ import (
 	"io"
 	"os"
 
-	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"peer-to-peer-app-v0.01/filehandling"
 )
 
-const buffSize = 1000
+const buffSize = 10485760
 
 type filesend struct {
 	FileName string
@@ -21,12 +20,12 @@ type filesend struct {
 	From     peer.ID
 }
 
-func ComposeFileSend(filename string, filetype string, host host.Host) (filesend, error) {
+func ComposeFileSend(filename string, filetype string, hostID peer.ID) (filesend, error) {
 	fileSendObj := &filesend{
 		FileName: filename,
 		FileType: filetype,
 		FileSize: 0,
-		From:     host.ID(),
+		From:     hostID,
 	}
 	filesize, err := fileSendObj.getFileSize()
 	fileSendObj.FileSize = filesize
@@ -74,6 +73,10 @@ func (fl filesend) toStream(str network.Stream, file *os.File, bufferSize int, f
 		if err != nil {
 			fmt.Println("Error while sending the buffer to the stream")
 		} else {
+			err := streamWriter.Flush()
+			if err != nil {
+				fmt.Println("Error while flushing")
+			}
 			fmt.Println("Send ", sendByte, " bytes to stream")
 		}
 
@@ -93,6 +96,10 @@ func (fl filesend) toStream(str network.Stream, file *os.File, bufferSize int, f
 	if err != nil {
 		fmt.Println("Error while sending the buffer to the stream")
 	} else {
+		err := streamWriter.Flush()
+		if err != nil {
+			fmt.Println("Error while flushing")
+		}
 		fmt.Println("Send ", sendByte, " bytes to stream")
 	}
 

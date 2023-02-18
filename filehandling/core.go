@@ -17,6 +17,39 @@ type FileSendReqest struct {
 	FileType string
 	FileSize int
 	From     peer.ID
+	// To       peer.ID
+}
+
+type FileQueue []FileSendReqest
+
+var FileSendQueue FileQueue
+
+func (fq FileQueue) Enqueue(fsr FileSendReqest) FileQueue {
+	fq = append(fq, fsr)
+	return fq
+}
+
+func (fq FileQueue) Remove(frs FileSendReqest) FileQueue {
+	for g := 0; g < len(fq); g++ {
+		if fq[g].FileName == frs.FileName {
+			if g == 0 {
+				fq = fq[1:]
+			} else {
+				fq = fq[:g+1]
+				fq_rest := fq[g+1:]
+				for o := 0; o < len(fq_rest); o++ {
+					fq = append(fq, fq_rest[o])
+				}
+			}
+		}
+	}
+	return fq
+}
+
+func (fq FileQueue) Dequeue() (FileQueue, FileSendReqest) {
+	element := fq[0]
+	fq = fq[1:]
+	return fq, element
 }
 
 func (fhd FileSendReqest) CreatFileRecieveStream(ctx context.Context, host host.Host) network.Stream {

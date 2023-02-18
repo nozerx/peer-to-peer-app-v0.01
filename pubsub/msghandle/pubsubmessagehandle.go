@@ -95,7 +95,7 @@ func handleInputFromSDI(ctx context.Context, host host.Host, topic *p2ppubsub.To
 				fileType := strings.Split(fileName, ".")[1]
 				fmt.Println("Directive to send the file ", fileName, "of file type :", fileType)
 				fmt.Println("the length of file name", len(fileName))
-				fileSendObj, err := send.ComposeFileSend(fileName, fileType, host)
+				fileSendObj, err := send.ComposeFileSend(fileName, fileType, host.ID())
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -116,6 +116,11 @@ func handleInputFromSDI(ctx context.Context, host host.Host, topic *p2ppubsub.To
 					}
 				}
 				fmt.Println("Size of file to be sent is :", fileSendObj.FileSize)
+				filehandling.FileSendQueue = filehandling.FileSendQueue.Enqueue(fileSendReqMsg)
+				fmt.Println("File send queue len", len(filehandling.FileSendQueue))
+				for k := 0; k < len(filehandling.FileSendQueue); k++ {
+					fmt.Println(filehandling.FileSendQueue[k].FileName)
+				}
 			} else {
 				fmt.Println("Tag-> <c>")
 				writeToSubscription(ctx, host, input, topic)

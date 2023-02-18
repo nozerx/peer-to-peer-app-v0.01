@@ -23,7 +23,7 @@ type Filerecieve struct {
 	From     peer.ID
 }
 
-const buffSize = 1000
+const buffSize = 1
 
 func (fr Filerecieve) fromStream(str network.Stream, file *os.File, bufferSize int, fileRecReq *FileRecieveRequest) {
 	streamReader := bufio.NewReader(str)
@@ -68,6 +68,7 @@ func (fr Filerecieve) fromStream(str network.Stream, file *os.File, bufferSize i
 
 func (fr Filerecieve) RecieveFile(str network.Stream, fileRecReq *FileRecieveRequest) {
 	file, err := os.Create(fr.FileName)
+	// time.Sleep(60 * time.Second)
 	if err != nil {
 		fmt.Println("Error while creating the recieving file ", fr.FileName)
 	} else {
