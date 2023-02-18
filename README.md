@@ -9,5 +9,5 @@
  
  This project is part of a self help excercise to improve and familiarize with libp2p
  
- Please only use this project as refernce, and do not use it for file sharing ;-)
+ Please only use this project as reference, and do not use it for file sharing ;-)
  
