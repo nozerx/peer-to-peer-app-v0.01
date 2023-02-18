@@ -1,4 +1,4 @@
-# peer-to-peer-app-v0.01
+# peer-to-peer-app-v1.0.0
  Peer to peer CLI app to familiarize with libp2p specifications
  
  This app implements a basic file sharing mechanism using libp2p specification
