@@ -6,10 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"runtime"
+	"strings"
 
 	p2ppubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"peer-to-peer-app-v0.01/filehandling"
+	"peer-to-peer-app-v0.01/filehandling/send"
 )
 
 type Chatmessage struct {
@@ -51,6 +55,22 @@ func handleInputFromSubscription(ctx context.Context, host host.Host, sub *p2ppu
 						fmt.Println("[ BY-> ", inputMsg.ReceivedFrom.Pretty()[len(inputMsg.ReceivedFrom.Pretty())-6:len(inputMsg.ReceivedFrom.Pretty())], "->", chatMsg.Messagecontent)
 					}
 				}
+				if inputPacket.Type == "flsnd" {
+					fileRecieveRequest := &filehandling.FileSendReqest{}
+					err := json.Unmarshal(inputPacket.InnerContent, fileRecieveRequest)
+					if fileRecieveRequest.From == host.ID() {
+						continue
+					}
+					fmt.Println("File recieve request recieved")
+					if err != nil {
+						fmt.Println("Error while unmarshalling at file recieve request level")
+					} else {
+						fmt.Println("Request to recieve file ", fileRecieveRequest.FileName, " of type ", fileRecieveRequest.FileType, "of size ", fileRecieveRequest.FileSize)
+						fmt.Println("From ", fileRecieveRequest.From)
+						fileStream := fileRecieveRequest.CreatFileRecieveStream(ctx, host)
+						fileRecieveRequest.HandleFileRecieve(fileStream)
+					}
+				}
 			}
 		}
 	}
@@ -65,8 +85,37 @@ func handleInputFromSDI(ctx context.Context, host host.Host, topic *p2ppubsub.To
 		} else {
 			if input[:3] == "<s>" {
 				fmt.Println("Tag-> <s>")
-				// to send file
-				fmt.Println("Directive to send the file ", input[3:])
+				escapeSeqLen := 0
+				if runtime.GOOS == "windows" {
+					escapeSeqLen = 2
+				} else {
+					escapeSeqLen = 1
+				}
+				fileName := input[3 : len(input)-escapeSeqLen]
+				fileType := strings.Split(fileName, ".")[1]
+				fmt.Println("Directive to send the file ", fileName, "of file type :", fileType)
+				fmt.Println("the length of file name", len(fileName))
+				fileSendObj, err := send.ComposeFileSend(fileName, fileType, host)
+				if err != nil {
+					fmt.Println(err)
+				}
+				fileSendReqMsg := fileSendObj.ComposeFileSendRequestMessage()
+				inputContent, err := json.Marshal(fileSendReqMsg)
+				if err != nil {
+					fmt.Println("Error while marshalling at file send request level")
+				} else {
+					packetContent := &Packet{
+						InnerContent: inputContent,
+						Type:         "flsnd",
+					}
+					packet, err := json.Marshal(packetContent)
+					if err != nil {
+						fmt.Println("Error while marshalling at packet level")
+					} else {
+						topic.Publish(ctx, packet)
+					}
+				}
+				fmt.Println("Size of file to be sent is :", fileSendObj.FileSize)
 			} else {
 				fmt.Println("Tag-> <c>")
 				writeToSubscription(ctx, host, input, topic)

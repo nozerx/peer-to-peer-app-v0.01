@@ -25,7 +25,7 @@ func DiscoverPeers(ctx context.Context, host host.Host, kad_dht *dht.IpfsDHT, se
 		for peerAddr := range peerChannel {
 			err := host.Connect(ctx, peerAddr)
 			if err != nil {
-				fmt.Println("Error while connecting to peer :", peerAddr.ID)
+				// fmt.Println("Error while connecting to peer :", peerAddr.ID)
 			} else {
 				fmt.Println("Successful in connecting to peer :", peerAddr.ID)
 			}
