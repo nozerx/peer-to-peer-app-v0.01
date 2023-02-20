@@ -68,9 +68,9 @@ func (fhd FileSendReqest) initializeFileRecieve() (*recieve.Filerecieve, *reciev
 		From:     fhd.From,
 	}
 	fileRecieveRequestObj := &recieve.FileRecieveRequest{
-		FileRfileRecieveObj: fileRecieveObj,
-		Processed:           false,
-		Recieved:            true,
+		FileRecieveObj: fileRecieveObj,
+		Processed:      false,
+		Recieved:       false,
 	}
 	return fileRecieveObj, fileRecieveRequestObj
 

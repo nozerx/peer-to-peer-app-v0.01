@@ -11,9 +11,9 @@ import (
 )
 
 type FileRecieveRequest struct {
-	FileRfileRecieveObj *Filerecieve
-	Processed           bool
-	Recieved            bool
+	FileRecieveObj *Filerecieve
+	Processed      bool
+	Recieved       bool
 }
 
 type Filerecieve struct {

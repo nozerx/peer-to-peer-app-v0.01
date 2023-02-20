@@ -15,8 +15,8 @@ func main() {
 	ctx, host := p2pnet.EstablishP2P()
 	host.SetStreamHandler(protocolID, send.HandleInputStream)
 	kad_dht := p2pnet.HandleDHT(ctx, host)
-	sub, topic := pubsub.HandlePubSub(ctx, host, topic)
+	sub, top := pubsub.HandlePubSub(ctx, host, topic)
 	go p2pnet.DiscoverPeers(ctx, host, kad_dht, service)
-	msghandle.HandlePubSubMessages(ctx, host, sub, topic)
+	msghandle.HandlePubSubMessages(ctx, host, sub, top)
 
 }
